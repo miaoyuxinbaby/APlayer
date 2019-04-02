@@ -14,6 +14,7 @@ import right from '../assets/right.svg';
 import skip from '../assets/skip.svg';
 import lrc from '../assets/lrc.svg';
 
+// 利用svg-inline-loader 引入svg文件 这个我考虑一下，用这个loader替换svg-sprite-loader
 const Icons = {
     play: play,
     pause: pause,

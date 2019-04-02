@@ -23,14 +23,21 @@ class APlayer {
      * @constructor
      */
     constructor (options) {
+        // 序列号 options
         this.options = handleOption(options);
+        // 用户指定的容器 dom
         this.container = this.options.container;
+        // 播放器 播放状态 isPaused
         this.paused = true;
+        // 这是啥。。。可能是预留的api，但文档中没有相关描述并且，感觉没啥用。因为播放完毕肯定有监听事件，直接写在里面就 ok 了
         this.playedPromise = Promise.resolve();
+        // 播放器模式，normal fixed mini 三种
         this.mode = 'normal';
 
+        // 洗牌算法 获取一个随机播放列表
         this.randomOrder = utils.randomOrder(this.options.audio.length);
 
+        // 根据对应配置项，为容器dom添加对应的样式
         this.container.classList.add('aplayer');
         if (this.options.lrcType && !this.options.fixed) {
             this.container.classList.add('aplayer-withlrc');
@@ -57,24 +64,29 @@ class APlayer {
             }
         }
 
+        // new dom 实例
         this.template = new Template({
             container: this.container,
             options: this.options,
             randomOrder: this.randomOrder,
         });
 
+        // 添加 fixed 模式的样式
         if (this.options.fixed) {
             this.container.classList.add('aplayer-fixed');
             this.template.body.style.width = this.template.body.offsetWidth - 18 + 'px';
         }
+        // 添加 mini 模式的样式
         if (this.options.mini) {
             this.setMode('mini');
             this.template.info.style.display = 'block';
         }
+        // 歌曲信息栏的宽度如果小于200，更换样式
         if (this.template.info.offsetWidth < 200) {
             this.template.time.classList.add('aplayer-time-narrow');
         }
 
+        // new 歌词
         if (this.options.lrcType) {
             this.lrc = new Lrc({
                 container: this.template.lrc,
@@ -82,13 +94,20 @@ class APlayer {
                 player: this,
             });
         }
+        // 初始化事件
         this.events = new Events();
+        // 本地存储初始化
         this.storage = new Storage(this);
+        // 进度条
         this.bar = new Bar(this.template);
+        // 操作栏
         this.controller = new Controller(this);
+        // 缓冲检测
         this.timer = new Timer(this);
+        
         this.list = new List(this);
 
+        // 这里才执行 initAudio，所以我认为，new Controller中 initVolumeButton 中的音量设置是无效的。
         this.initAudio();
         this.bindEvents();
         if (this.options.order === 'random') {
@@ -110,12 +129,14 @@ class APlayer {
         this.audio = document.createElement('audio');
         this.audio.preload = this.options.preload;
 
+        // 代理绑定对应的事件
         for (let i = 0; i < this.events.audioEvents.length; i++) {
             this.audio.addEventListener(this.events.audioEvents[i], (e) => {
                 this.events.trigger(this.events.audioEvents[i], e);
             });
         }
 
+        // 设置初始音量
         this.volume(this.storage.get('volume'), true);
     }
 
@@ -342,6 +363,7 @@ class APlayer {
         this.audio.pause();
     }
 
+    // 音量图标
     switchVolumeIcon () {
         if (this.volume() >= 0.95) {
             this.template.volumeButton.innerHTML = Icons.volumeUp;
@@ -356,6 +378,7 @@ class APlayer {
 
     /**
      * Set volume
+     * 不传值的时候，是获取音量，禁音则是 0
      */
     volume (percentage, nostorage) {
         percentage = parseFloat(percentage);
@@ -424,6 +447,7 @@ class APlayer {
         this.events.trigger('destroy');
     }
 
+    // 改变 mode 的 api
     setMode (mode = 'normal') {
         this.mode = mode;
         if (mode === 'mini') {

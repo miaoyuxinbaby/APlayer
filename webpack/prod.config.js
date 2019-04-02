@@ -3,6 +3,7 @@ const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
+// 用这玩意儿获取版本号，其他和dev都一样
 const gitRevisionPlugin = new GitRevisionPlugin();
 
 module.exports = {

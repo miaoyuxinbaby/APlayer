@@ -1,6 +1,7 @@
 export default (options) => {
 
     // default options
+    // init 一个默认的 options,逐步根据用户定义的 options 增强
     const defaultOption = {
         container: options.element || document.getElementsByClassName('aplayer')[0],
         mini: options.narrow || options.fixed || false,

@@ -104,6 +104,7 @@ module.exports = {
     },
 
     plugins: [
+        // 定义全局变量 APLAYER_VERSION & GIT_HASH
         new webpack.DefinePlugin({
             APLAYER_VERSION: `"${require('../package.json').version}"`,
             GIT_HASH: JSON.stringify(gitRevisionPlugin.version())

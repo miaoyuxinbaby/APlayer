@@ -3,6 +3,7 @@ import tplLrc from '../template/lrc.art';
 class Lrc {
     constructor (options) {
         this.container = options.container;
+        // 是否异步加载lrc文件
         this.async = options.async;
         this.player = options.player;
         this.parsed = [];
@@ -29,6 +30,7 @@ class Lrc {
         }
     }
 
+    // 更新当前 lrc 的播放状态 横轴的滚动位置
     update (currentTime = this.player.audio.currentTime) {
         if (this.index > this.current.length - 1 || currentTime < this.current[this.index][0] || (!this.current[this.index + 1] || currentTime >= this.current[this.index + 1][0])) {
             for (let i = 0; i < this.current.length; i++) {
@@ -43,8 +45,11 @@ class Lrc {
         }
     }
 
+    // 切换 lrc 的 api
     switch (index) {
+        // 已解析的 lrc 列表中不存在该 key（index），则先去解析
         if (!this.parsed[index]) {
+            // 如果不是异步，直接解析 传入的 lrc 字符串
             if (!this.async) {
                 if (this.player.list.audios[index].lrc) {
                     this.parsed[index] = this.parse(this.player.list.audios[index].lrc);
@@ -53,6 +58,7 @@ class Lrc {
                     this.parsed[index] = [['00:00', 'Not available']];
                 }
             }
+            // 异步则异步请求文件，一个标准的原生 xhr
             else {
                 this.parsed[index] = [['00:00', 'Loading']];
                 const xhr = new XMLHttpRequest();
@@ -78,6 +84,7 @@ class Lrc {
             }
         }
 
+        // new lrc dom
         this.container.innerHTML = tplLrc({
             lyrics: this.parsed[index]
         });
@@ -86,6 +93,7 @@ class Lrc {
     }
 
     /**
+     * 解析 lrc
      * Parse lrc, suppose multiple time tag
      *
      * @param {String} lrc_s - Format:
@@ -132,10 +140,12 @@ class Lrc {
         }
     }
 
+    // 删除 已解析 lrc 的 api
     remove (index) {
         this.parsed.splice(index, 1);
     }
 
+    // 清空 lrc 的 api
     clear () {
         this.parsed = [];
         this.container.innerHTML = '';

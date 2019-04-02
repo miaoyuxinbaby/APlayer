@@ -18,6 +18,7 @@ const utils = {
 
     isMobile: isMobile,
 
+    // 存取 storage 的简单封装
     storage: {
         set: (key, value) => {
             localStorage.setItem(key, value);
@@ -26,6 +27,7 @@ const utils = {
         get: (key) => localStorage.getItem(key)
     },
 
+    // 对 pc 和 移动端 拖拽触摸相关事件的简单封装
     nameMap: {
         dragStart: isMobile ? 'touchstart' : 'mousedown',
         dragMove: isMobile ? 'touchmove' : 'mousemove',

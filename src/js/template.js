@@ -10,8 +10,10 @@ class Template {
     }
 
     init () {
+        // 封面图片
         let cover = '';
         if (this.options.audio.length) {
+            // 随机播放模式时封面选随机list里的第一个
             if (this.options.order === 'random') {
                 cover = this.options.audio[this.randomOrder[0]].cover;
             }
@@ -20,13 +22,16 @@ class Template {
             }
         }
 
+        // new 一个 dom 实例
         this.container.innerHTML = tplPlayer({
             options: this.options,
             icons: Icons,
             cover: cover,
+            // 这个getObject操作没看懂，可能是art-template 需要这样传递参数。，。。
             getObject: (obj) => obj,
         });
 
+        // 获取系列dom句柄
         this.lrc = this.container.querySelector('.aplayer-lrc-contents');
         this.lrcWrap = this.container.querySelector('.aplayer-lrc');
         this.ptime = this.container.querySelector('.aplayer-ptime');

@@ -2,6 +2,7 @@ class Events {
     constructor () {
         this.events = {};
 
+        // 将原生事件和 player 的自定义事件区分开
         this.audioEvents = [
             'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error',
             'loadeddata', 'loadedmetadata', 'loadstart', 'mozaudioavailable', 'pause', 'play',
@@ -17,6 +18,7 @@ class Events {
     }
 
     on (name, callback) {
+        // 如果没有找到对应的事件，则 type 返回值为 null
         if (this.type(name) && typeof callback === 'function') {
             if (!this.events[name]) {
                 this.events[name] = [];
