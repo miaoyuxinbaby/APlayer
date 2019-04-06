@@ -104,11 +104,12 @@ class APlayer {
         this.controller = new Controller(this);
         // 缓冲检测
         this.timer = new Timer(this);
-        
+        // 播放列表
         this.list = new List(this);
 
         // 这里才执行 initAudio，所以我认为，new Controller中 initVolumeButton 中的音量设置是无效的。
         this.initAudio();
+        // 绑定事件
         this.bindEvents();
         if (this.options.order === 'random') {
             this.list.switch(this.randomOrder[0]);
@@ -139,7 +140,7 @@ class APlayer {
         // 设置初始音量
         this.volume(this.storage.get('volume'), true);
     }
-
+    // 将事件和默认回调绑定
     bindEvents () {
         this.on('play', () => {
             if (this.paused) {
@@ -153,6 +154,7 @@ class APlayer {
             }
         });
 
+        // 当播放进度变化时，更新歌词和进度条。
         this.on('timeupdate', () => {
             if (!this.disableTimeupdate) {
                 this.bar.set('played', this.audio.currentTime / this.duration, 'width');
@@ -164,6 +166,7 @@ class APlayer {
             }
         });
 
+        // 歌曲总时长变化时
         // show audio time: the metadata has loaded or changed
         this.on('durationchange', () => {
             if (this.duration !== 1) {           // compatibility: Android browsers will output 1 at first
@@ -171,17 +174,20 @@ class APlayer {
             }
         });
 
+        // 音频下载进度
         // show audio loaded bar: to inform interested parties of progress downloading the media
         this.on('progress', () => {
             const percentage = this.audio.buffered.length ? this.audio.buffered.end(this.audio.buffered.length - 1) / this.duration : 0;
             this.bar.set('loaded', percentage, 'width');
         });
 
+        // 下载失败
         // audio download error: an error occurs
         let skipTime;
         this.on('error', () => {
             if (this.list.audios.length > 1) {
                 this.notice('An audio error has occurred, player will skip forward in 2 seconds.');
+                // 重试
                 skipTime = setTimeout(() => {
                     this.skipForward();
                     if (!this.paused) {
@@ -193,13 +199,17 @@ class APlayer {
                 this.notice('An audio error has occurred.');
             }
         });
+        // list 切换，当然要删除所有的重试定时器
         this.events.on('listswitch', () => {
             skipTime && clearTimeout(skipTime);
         });
 
+        // 播放结束，根据情况判断怎么做
         // multiple audio play
         this.on('ended', () => {
+            // 未开启循环
             if (this.options.loop === 'none') {
+                // 列表顺序
                 if (this.options.order === 'list') {
                     if (this.list.index < this.list.audios.length - 1) {
                         this.list.switch((this.list.index + 1) % this.list.audios.length);
@@ -210,6 +220,7 @@ class APlayer {
                         this.pause();
                     }
                 }
+                // 随机播放
                 else if (this.options.order === 'random') {
                     if (this.randomOrder.indexOf(this.list.index) < this.randomOrder.length - 1) {
                         this.list.switch(this.nextIndex());
@@ -221,10 +232,12 @@ class APlayer {
                     }
                 }
             }
+            // 单曲循环
             else if (this.options.loop === 'one') {
                 this.list.switch(this.list.index);
                 this.play();
             }
+            // 列表循环
             else if (this.options.loop === 'all') {
                 this.skipForward();
                 this.play();
@@ -232,6 +245,7 @@ class APlayer {
         });
     }
 
+    // 切歌的时候用来设置 audio，针对一些格式的音乐做了特殊处理
     setAudio (audio) {
         if (this.hls) {
             this.hls.destroy();
@@ -248,6 +262,7 @@ class APlayer {
         }
         else {
             if (!type || type === 'auto') {
+                // m3u8后缀的是hls文件
                 if (/m3u8(#|\?|$)/i.exec(audio.url)) {
                     type = 'hls';
                 }
@@ -256,6 +271,7 @@ class APlayer {
                 }
             }
             if (type === 'hls') {
+                // hls特殊处理
                 if (Hls.isSupported()) {
                     this.hls = new Hls();
                     this.hls.loadSource(audio.url);
@@ -279,6 +295,7 @@ class APlayer {
         }
     }
 
+    // 播放器主题设置
     theme (color = this.list.audios[this.list.index].theme || this.options.theme, index = this.list.index, isReset = true) {
         if (isReset) {
             this.list.audios[index] && (this.list.audios[index].theme = color);
@@ -292,6 +309,7 @@ class APlayer {
         }
     }
 
+    // 跳转到指定时间播放
     seek (time) {
         time = Math.max(time, 0);
         time = Math.min(time, this.duration);
@@ -304,6 +322,7 @@ class APlayer {
         return isNaN(this.audio.duration) ? 0 : this.audio.duration;
     }
 
+    // 控制ui的播放
     setUIPlaying () {
         if (this.paused) {
             this.paused = false;
@@ -327,6 +346,7 @@ class APlayer {
         }
     }
 
+    // 播放
     play () {
         this.setUIPlaying();
 
@@ -341,6 +361,7 @@ class APlayer {
         }
     }
 
+    // ui paused
     setUIPaused () {
         if (!this.paused) {
             this.paused = true;
@@ -458,6 +479,7 @@ class APlayer {
         }
     }
 
+    // 弹框提示
     notice (text, time = 2000, opacity = 0.8) {
         this.template.notice.innerHTML = text;
         this.template.notice.style.opacity = opacity;
@@ -475,6 +497,7 @@ class APlayer {
         }
     }
 
+    // 获取上一首的index
     prevIndex () {
         if (this.list.audios.length > 1) {
             if (this.options.order === 'list') {
@@ -495,6 +518,7 @@ class APlayer {
         }
     }
 
+    // 获取下一首的index
     nextIndex () {
         if (this.list.audios.length > 1) {
             if (this.options.order === 'list') {
@@ -515,6 +539,7 @@ class APlayer {
         }
     }
 
+    // 封装的上一首下一首api
     skipBack () {
         this.list.switch(this.prevIndex());
     }
@@ -523,6 +548,7 @@ class APlayer {
         this.list.switch(this.nextIndex());
     }
 
+    // 版本
     static get version () {
         /* global APLAYER_VERSION */
         return APLAYER_VERSION;
